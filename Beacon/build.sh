@@ -29,6 +29,14 @@ nim c $COMMON_FLAGS \
     -o:$OUTDIR/beacon_win64_$TIMESTAMP.exe \
     src/main.nim
 
+nim c $COMMON_FLAGS \
+    --cpu:i386 \
+    --os:windows \
+    -o:$OUTDIR/beacon_win32_$TIMESTAMP.exe \
+    src/main.nim
+
+
+
 # Clean Nim Cache
 rm -rf .nimcache
 
