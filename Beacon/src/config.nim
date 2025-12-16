@@ -16,25 +16,14 @@ const
 
 type BeaconConfig* = object
     beaconID*: string
-
     profileID*: string
-
     c2Urls*: seq[string]
-
     currentDomainIndex*: int
-
     sleepTime*: int
-
     jitter*: int
-
     encryptionKey*: seq[byte]
-
     killDate*: DateTime
-
     lastCheckin*: DateTime
-
     userAgent*: string
-
     sleepMask*: bool
-
     stomppe*: bool
