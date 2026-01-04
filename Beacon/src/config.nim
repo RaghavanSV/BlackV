@@ -4,6 +4,7 @@ const
   CHECKIN_URI* = "/checkin"
   TASK_URI* = "/task"
   RESULT_URI* = "/result"
+  IMPLANT_COUNT* = 0
 
   #CRYPTO
   PER_BEACON_KEY* = "9284174818712"
