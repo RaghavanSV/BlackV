@@ -58,14 +58,16 @@ func CreateUser(username, password, role_user string) error {
 
 // Authenticate checks username/password
 func Authenticate(username, password string) bool {
-	//u, exists := users[username]
-	//if !exists {
-	//	return false
-	//}
-
-	//err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	return true //testing
-
+	u, exists := users[username]
+	if !exists {
+		return false
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	if err == nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 // GenerateJWT returns signed JWT token

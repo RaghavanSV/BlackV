@@ -6,6 +6,8 @@ const
     RESULT_URI* = "/result"
     IMPLANT_COUNT* = 0
 
+    let AGENT_ID = genID()
+
     #CRYPTO
     PER_BEACON_KEY* = "9284174818712"
     AES_KEY* = "1234567890123456"  # store the keys in hex
