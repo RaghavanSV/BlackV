@@ -1,22 +1,22 @@
+
 const
     IMPLANT_VERSION* = "0.0.1" 
     C2_URL* = "http://127.0.0.1:8080"
-    CHECKIN_URI* = "/checkin"
-    TASK_URI* = "/task"
-    RESULT_URI* = "/result"
+    CHECKIN_URI* = "/api/checkin"
+    TASK_URI* = "/api/task"
+    RESULT_URI* = "/api/result"
     IMPLANT_COUNT* = 0
-
-    let AGENT_ID = genID()
+    JITTER* = 8
+    SLEEP_TIME* = 3
 
     #CRYPTO
     PER_BEACON_KEY* = "9284174818712"
     AES_KEY* = "1234567890123456"  # store the keys in hex
     AES_NONCE* = "12345678" 
-    XOR_KEY* = 
-
     SLEEP_MIN* = 3
     SLEEP_MAX* = 8
 
+#[
 type BeaconConfig* = object
     beaconID*: string
     profileID*: string
@@ -25,8 +25,10 @@ type BeaconConfig* = object
     sleepTime*: int
     jitter*: int
     encryptionKey*: seq[byte]
-    killDate*: DateTime
-    lastCheckin*: DateTime
+    killDate*: date
+    lastCheckin*: date
     userAgent*: string
     sleepMask*: bool
     stomppe*: bool
+
+]#

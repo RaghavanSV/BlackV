@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	//local
@@ -59,7 +60,7 @@ func CheckinHandler(w http.ResponseWriter, r *http.Request) {
 	ws.BroadcastAgentOnline(req.ID, req.Hostname, req.IP, req.OS_version, req.User)
 
 	task := jobs.GetNextTask(req.ID)
-
+	log.Println("entered the checkin Handler function and passed the GetNextTask: ", task)
 	w.Write([]byte(task))
 }
 

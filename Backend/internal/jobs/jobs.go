@@ -3,6 +3,7 @@ package jobs
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -51,6 +52,7 @@ func AddTask(agentID, command string) Task {
 
 	taskMap[agentID] = append(taskMap[agentID], task)
 
+	log.Println("entered the Addtask function. here is the current taskmap : ", taskMap)
 	return task
 }
 
@@ -61,6 +63,7 @@ func GetNextTask(agentID string) string {
 	if len(taskMap[agentID]) == 0 {
 		return ""
 	}
+	log.Println("entered the GetNextTask funtion")
 
 	next := taskMap[agentID][0]
 	taskMap[agentID] = taskMap[agentID][1:]
@@ -76,6 +79,8 @@ func GetNextTask(agentID string) string {
 	}
 
 	b, _ := json.Marshal(bt)
+
+	log.Println("entered the GetNextTask and it got : ", string(b))
 
 	return string(b)
 }

