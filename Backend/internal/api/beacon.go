@@ -58,7 +58,7 @@ func CheckinHandler(w http.ResponseWriter, r *http.Request) {
 
 	//bradcast the agent's status
 	ws.BroadcastAgentOnline(req.ID, req.Hostname, req.IP, req.OS_version, req.User)
-
+	log.Println("Entered the Checkin Handler and the ID is : ", req.ID)
 	task := jobs.GetNextTask(req.ID)
 	log.Println("entered the checkin Handler function and passed the GetNextTask: ", task)
 	w.Write([]byte(task))

@@ -327,7 +327,8 @@ proc ReadPipe(pipe_handle: HANDLE): string=
 
 proc execProcess*(cmd: string): string =
     echo "enter the parent process id :"
-    var pid: DWORD = parseInt(readLine(stdin)).DWORD
+    #var pid: DWORD = parseInt(readLine(stdin)).DWORD
+    var pid: DWORD = GetCurrentProcessID()
     echo "=".repeat(60)
     echo "Selected PID is : ",pid
     echo "=".repeat(60)

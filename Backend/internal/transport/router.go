@@ -30,7 +30,6 @@ func NewRouter() http.Handler {
 	apiBase.HandleFunc("/checkin", api.CheckinHandler).Methods("POST")
 	apiBase.HandleFunc("/task", api.TaskHandler).Methods("POST")
 	apiBase.HandleFunc("/result", api.ResultHandler).Methods("POST")
-
 	apiBase.HandleFunc("/login", api.LoginHandler).Methods("POST")
 
 	//------------------------------------------------------------------
