@@ -16,7 +16,7 @@ func main() {
 	if err := auth.LoadUsers(); err != nil {
 		log.Printf("[!] auth: failed to load users.json: %v\n", err)
 	} else {
-		log.Printf("[+] auth: loaded %d users\n", 0)
+		log.Printf("[+] auth: Users Loaded Successfully\n")
 	}
 
 	// start websocket hub

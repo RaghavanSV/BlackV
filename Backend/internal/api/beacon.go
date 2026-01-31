@@ -74,7 +74,7 @@ func ResultHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-
+	log.Println("[+] Inside Result Handler got the value of :", req)
 	ws.BroadcastTaskresult(req.ID, req.TaskID, req.Command, req.Result)
 
 	jobs.StoreResult(req.ID, req.TaskID, req.Command, req.Result)

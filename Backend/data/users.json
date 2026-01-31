@@ -2,7 +2,7 @@
     "admin":{
       "id": "uuid001",
       "username": "admin",
-      "password": "$2a$10$8EGYLqYDrzt/EUF2Kk59.OHGFIT9uVxGTJpsZqca8m/DaFfHdU4Si",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
       "email": "admin@example.com",
       "role": "admin",
       "created_at": "2024-01-01T00:00:00Z"

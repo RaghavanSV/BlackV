@@ -1,13 +1,15 @@
 package auth
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte("CHANGE_ME_TO_A_LONG_RANDOM_STRING")
@@ -26,11 +28,10 @@ var users = make(map[string]User)
 
 // Load users from disk
 func LoadUsers() error {
-	data, err := os.ReadFile("data/users.json")
+	data, err := os.ReadFile("../../data/users.json")
 	if err != nil {
 		return err
 	}
-
 	return json.Unmarshal(data, &users)
 }
 
@@ -46,11 +47,12 @@ func CreateUser(username, password, role_user string) error {
 		return errors.New("user already exists")
 	}
 
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash := sha256.Sum256([]byte(password))
+	hex_encoded_hash := hex.EncodeToString(hash[:])
 
 	users[username] = User{
 		Username: username,
-		Password: string(hash),
+		Password: hex_encoded_hash,
 	}
 
 	return SaveUsers()
@@ -58,12 +60,19 @@ func CreateUser(username, password, role_user string) error {
 
 // Authenticate checks username/password
 func Authenticate(username, password string) bool {
+	log.Println("[+] Inside the Authenticate function and received = ", username, ":", password)
 	u, exists := users[username]
 	if !exists {
 		return false
 	}
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	if err == nil {
+	log.Println("[+] Inside the Authenticate Function and the users map data : ", u)
+
+	current_hash := sha256.Sum256([]byte(password))
+	hex_encoded_current_hash := hex.EncodeToString(current_hash[:])
+	log.Println("the original Hash from the users file :", u.Password)
+	log.Println("the current hex encoded hash :", hex_encoded_current_hash)
+	if u.Password == hex_encoded_current_hash {
+		log.Println("[+] Inside the Athenticate function everything is fine the password matched.")
 		return true
 	} else {
 		return false

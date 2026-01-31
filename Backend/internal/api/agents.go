@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/RaghavanSV/BlackV/Backend/internal/agents"
@@ -10,7 +11,9 @@ import (
 
 // GET /agents
 func ListAgentsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("[+] Inside the ListAgentHandler")
 	list := agents.List()
+	log.Println("[+] Inside the Agent List Handler : ", list)
 	WriteJson(w, list)
 }
 
