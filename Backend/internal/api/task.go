@@ -26,6 +26,9 @@ type TaskCreateResponse struct {
 	CreatedAT string `json:"createdAT"`
 }
 
+type ResultResponse struct {
+}
+
 func TaskHandler(w http.ResponseWriter, r *http.Request) {
 	var req TaskCreateRequest
 

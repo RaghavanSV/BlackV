@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RaghavanSV/BlackV/Backend/internal/ws"
 	"github.com/google/uuid"
 )
 
@@ -109,17 +110,23 @@ func StoreResult(agentID, taskID, command, output string) {
 		Status:  "success",
 	}
 
+	ws.BroadcastTaskresult(agentID, taskID, command, output)
+
+	log.Println("[+] Inside the jobs.storeresult. Broadcasted")
+
 	resultMap[agentID] = append(resultMap[agentID], rt)
 
 }
 
-func GetResults() []*Result {
+func GetResults() []Result {
 	mu.Lock()
 	defer mu.Unlock()
-	list := make([]*Result, 0, len(taskMap))
 
-	for _, a := range taskMap {
-		list = append(list, a)
+	list := make([]Result, 0, len(resultMap)) //ResultMap [agent_id] -> [result_obj1, result_obj2..]
+
+	for _, a := range resultMap {
+		list = append(list, a...)
 	}
 
+	return list
 }

@@ -4,6 +4,8 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	"github.com/RaghavanSV/BlackV/Backend/internal/ws"
 )
 
 type Agent struct {
@@ -39,15 +41,19 @@ func RegisterOrUpdate(id, hostname, ip, os, user, status string) {
 		}
 
 		active[id] = ag
+		ws.BroadcastAgentOnline(id, hostname, ip, os, user)
 		return
 	}
 	//if already exist update hostname and lastseen
+
+	if ag.Hostname != hostname || ag.IP != ip || ag.User != user {
+		ws.BroadcastAgentOnline(id, hostname, ip, os, user)
+	}
 	ag.Hostname = hostname
 	ag.IP = ip
 	ag.OS = os
 	ag.User = user
 	ag.LastSeen = time.Now().UTC().Format(time.RFC3339)
-
 }
 
 func List() []*Agent {

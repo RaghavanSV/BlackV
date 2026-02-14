@@ -23,7 +23,7 @@ func BroadcastEvent(evtType string, payload interface{}) {
 
 	data, err := json.Marshal(ev)
 	if err != nil {
-		log.Println("ws: failed to marshal event %s: %v", evtType, err)
+		log.Printf("ws: failed to marshal event %s: %v", evtType, err)
 		return
 	}
 
@@ -42,6 +42,7 @@ func BroadcastAgentOnline(id, hostname, ip, os, user string) {
 }
 
 func BroadcastTaskresult(agentID, taskID, command, result string) {
+	log.Println("Inside the BroadcastTaskResult it is being broadcasted.")
 	BroadcastEvent("task_result", map[string]string{
 		"agent_id": agentID,
 		"task_id":  taskID,

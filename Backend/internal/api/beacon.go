@@ -8,13 +8,13 @@ import (
 	//local
 	"github.com/RaghavanSV/BlackV/Backend/internal/agents"
 	"github.com/RaghavanSV/BlackV/Backend/internal/jobs"
-	"github.com/RaghavanSV/BlackV/Backend/internal/ws"
 )
 
 type CheckinRequest struct {
 	ID                string `json:"id"`
 	Hostname          string `json:"hostname"`
-	IP                string `json:"ip"`
+	External_IP       string `json:"external_ip"`
+	OS                string `json:"os"`
 	OS_version        string `json:"os_version"`
 	OS_build          string `json:"os_build"`
 	Architecture      string `json:"architecture"`
@@ -53,10 +53,9 @@ func CheckinHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	agents.RegisterOrUpdate(req.ID, req.Hostname, req.IP, req.OS_build+" "+req.OS_version, req.User, req.Status) //agent'id and name of the host in whcih the agents is in
+	agents.RegisterOrUpdate(req.ID, req.Hostname, req.Internal_IP, req.OS, req.User, req.Status) //agent'id and name of the host in whcih the agents is in
 
 	//bradcast the agent's status
-	ws.BroadcastAgentOnline(req.ID, req.Hostname, req.IP, req.OS_version, req.User)
 	log.Println("Entered the Checkin Handler and the ID is : ", req.ID)
 	task := jobs.GetNextTask(req.ID)
 	log.Println("entered the checkin Handler function and passed the GetNextTask: ", task)
@@ -74,7 +73,6 @@ func ResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("[+] Inside Result Handler got the value of :", req)
-	ws.BroadcastTaskresult(req.ID, req.TaskID, req.Command, req.Result)
 
 	jobs.StoreResult(req.ID, req.TaskID, req.Command, req.Result)
 

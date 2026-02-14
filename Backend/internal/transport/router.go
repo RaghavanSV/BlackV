@@ -33,7 +33,7 @@ func NewRouter() http.Handler {
 	apiBase.HandleFunc("/task", api.TaskHandler).Methods("POST")
 	//
 
-	apiBase.HandleFunc("/results", api.ResultsHandler).Methods("GET") //for retriving results of all tasks
+	//apiBase.HandleFunc("/results", api.ResultsHandler).Methods("GET") //for retriving results of all tasks
 
 	apiBase.HandleFunc("/result", api.ResultHandler).Methods("POST")
 	apiBase.HandleFunc("/login", api.LoginHandler).Methods("POST")

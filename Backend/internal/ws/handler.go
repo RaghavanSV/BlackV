@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -25,7 +26,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
+	log.Println("[+] Inside WS handler and the connection upgraded.")
 	client := &Client{
 		hub:  hubInstance,
 		conn: conn,
