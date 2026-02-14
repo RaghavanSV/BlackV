@@ -8,13 +8,16 @@ const
     IMPLANT_COUNT* = 0
     JITTER* = 8
     SLEEP_TIME* = 3
-
+    
     #CRYPTO
     PER_BEACON_KEY* = "9284174818712"
     AES_KEY* = "1234567890123456"  # store the keys in hex
     AES_NONCE* = "12345678" 
     SLEEP_MIN* = 3
     SLEEP_MAX* = 8
+
+var 
+    CHECKIN_COUNTER* = 0
 
 #[
 type BeaconConfig* = object

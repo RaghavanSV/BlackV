@@ -18,10 +18,12 @@ type Task struct {
 
 type Result struct {
 	TaskID  string `json:"task_id"`
-	UIID    string `json:"ui_id"`
+	UIID    string `json:"id"`
 	Command string `json:"command"`
 	Output  string `json:"output"`
-	Time    int64  `json:"time"`
+	Time    string `json:"timestamp"`
+	Agent   string `json:"agent"`
+	Status  string `json:"status"`
 }
 
 var (
@@ -103,15 +105,21 @@ func StoreResult(agentID, taskID, command, output string) {
 		UIID:    uiID,
 		Command: command,
 		Output:  output,
-		Time:    time.Now().Unix(),
+		Time:    time.Now().UTC().Format(time.RFC3339),
+		Status:  "success",
 	}
 
 	resultMap[agentID] = append(resultMap[agentID], rt)
 
 }
 
-func GetResults(agentID string) []Result {
+func GetResults() []*Result {
 	mu.Lock()
 	defer mu.Unlock()
-	return resultMap[agentID]
+	list := make([]*Result, 0, len(taskMap))
+
+	for _, a := range taskMap {
+		list = append(list, a)
+	}
+
 }

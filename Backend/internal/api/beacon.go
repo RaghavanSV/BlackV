@@ -22,7 +22,6 @@ type CheckinRequest struct {
 	Process_ID        string `json:"process_id"`
 	Process_Name      string `json:"process_name"`
 	Internal_IP       string `json:"internal_ip"`
-	External_IP       string `json:"external_ip"`
 	Domain            string `json:"domain"`
 	IS_Admin          string `json:"is_admin"`
 	AV_Products       string `json:"av_products"`
@@ -54,7 +53,7 @@ func CheckinHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	agents.RegisterOrUpdate(req.ID, req.Hostname) //agent'id and name of the host in whcih the agents is in
+	agents.RegisterOrUpdate(req.ID, req.Hostname, req.IP, req.OS_build+" "+req.OS_version, req.User, req.Status) //agent'id and name of the host in whcih the agents is in
 
 	//bradcast the agent's status
 	ws.BroadcastAgentOnline(req.ID, req.Hostname, req.IP, req.OS_version, req.User)

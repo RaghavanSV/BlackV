@@ -28,7 +28,13 @@ func NewRouter() http.Handler {
 
 	apiBase := r.PathPrefix("/api").Subrouter()
 	apiBase.HandleFunc("/checkin", api.CheckinHandler).Methods("POST")
+
+	// tasks related endpoints //
 	apiBase.HandleFunc("/task", api.TaskHandler).Methods("POST")
+	//
+
+	apiBase.HandleFunc("/results", api.ResultsHandler).Methods("GET") //for retriving results of all tasks
+
 	apiBase.HandleFunc("/result", api.ResultHandler).Methods("POST")
 	apiBase.HandleFunc("/login", api.LoginHandler).Methods("POST")
 

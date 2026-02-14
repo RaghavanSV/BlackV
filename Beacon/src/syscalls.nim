@@ -289,15 +289,16 @@ proc NamePipeCreator(): tuple[serverHandle: HANDLE, clientHandle: HANDLE] =
 
 
 proc ReadPipe(pipe_handle: HANDLE): string=
-    var buffer: array[4096, char]
+    var buffer: array[6144, char]
     var bytesRead: DWORD
     var totalBytes: int = 0
     var output: string
+    var chunk: string
     echo "[*] Starting to read from pipe..."
     
     while true:
         # Read from pipe
-        let readResult = ReadFile(pipe_handle, addr buffer[0], 4096, addr bytesRead, NULL)
+        let readResult = ReadFile(pipe_handle, addr buffer[0], 6144, addr bytesRead, NULL)
         
         if readResult == 0:
             let err = GetLastError()
@@ -315,8 +316,9 @@ proc ReadPipe(pipe_handle: HANDLE): string=
         
         # Print the data
         totalBytes += bytesRead.int
-        output = newString(bytesRead)
-        copyMem(addr output[0], addr buffer[0], bytesRead)
+        chunk = newString(bytesRead)
+        copyMem(addr chunk[0], addr buffer[0], bytesRead)
+        output.add(chunk)
         stdout.write(output)
         stdout.flushFile()
 
@@ -335,7 +337,7 @@ proc execProcess*(cmd: string): string =
     var size: SIZE_T
     var si: STARTUPINFOEX
     var pi: PROCESS_INFORMATION
-    let command = "cmd.exe /c "&cmd
+    let command = "powershell.exe -Command "&cmd
     echo "[*] === Starting Command Execution ==="
     echo "[*] Command: ", command
     echo ""
@@ -453,4 +455,4 @@ proc execProcess*(cmd: string): string =
     
     echo "[+] === Execution Complete ==="
     echo output
-    return output
+    return $output

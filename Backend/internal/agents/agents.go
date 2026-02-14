@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"log"
 	"sync"
 	"time"
 )
@@ -8,7 +9,11 @@ import (
 type Agent struct {
 	ID       string `json:"id"`
 	Hostname string `json:"hostname"`
-	LastSeen int64  `json:"last_seen"`
+	IP       string `json:"ip"`
+	OS       string `json:"os"`
+	User     string `json:"user"`
+	Status   string `json:"status"`
+	LastSeen string `json:"last_seen"`
 }
 
 var (
@@ -16,7 +21,7 @@ var (
 	active = make(map[string]*Agent)
 )
 
-func RegisterOrUpdate(id, hostname string) {
+func RegisterOrUpdate(id, hostname, ip, os, user, status string) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -26,7 +31,11 @@ func RegisterOrUpdate(id, hostname string) {
 		ag := &Agent{
 			ID:       id,
 			Hostname: hostname,
-			LastSeen: time.Now().Unix(),
+			IP:       ip,
+			OS:       os,
+			User:     user,
+			Status:   status,
+			LastSeen: time.Now().UTC().Format(time.RFC3339),
 		}
 
 		active[id] = ag
@@ -34,7 +43,10 @@ func RegisterOrUpdate(id, hostname string) {
 	}
 	//if already exist update hostname and lastseen
 	ag.Hostname = hostname
-	ag.LastSeen = time.Now().Unix()
+	ag.IP = ip
+	ag.OS = os
+	ag.User = user
+	ag.LastSeen = time.Now().UTC().Format(time.RFC3339)
 
 }
 
@@ -47,6 +59,7 @@ func List() []*Agent {
 	for _, a := range active {
 		list = append(list, a)
 	}
+	log.Println("[+] inside the List fucntion for agents :", list)
 	return list
 
 }

