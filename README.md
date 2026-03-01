@@ -64,19 +64,31 @@ BlackV C2 is built to:
 
 ## 📂 Project Structure (High Level)
 
-```text
-BlackV/
-├── core/
-│   ├── syscalls/        # Direct syscall logic
-│   ├── memory/          # Allocation & protection
-│   └── injection/       # Process injection primitives
+```
+.
+├── Backend/                  # Go-based backend server
+│   ├── cmd/                  # Application entry points
+│   ├── data/                 # Storage / persistence layer
+│   ├── internal/             # Private application logic
+│   ├── pkg/                  # Reusable public packages
+│   ├── go.mod                # Go module definition
+│   └── go.sum                # Go dependencies checksum
 │
-├── evasion/
-│   ├── amsi/            # AMSI bypass research
-│   └── etw/             # ETW patching research
-│
-├── utils/
-│   ├── process/         # PID, handles, process helpers
-│   └── nt/              # NTSTATUS & structures
+├── Beacon/                   # Nim-based implant / beacon
+│   ├── src/
+│   │   ├── bin/              # Compiled binaries output
+│   │   ├── commands.nim      # Command handling logic
+│   │   ├── comms.nim         # C2 communication layer
+│   │   ├── config.nim        # Configuration definitions
+│   │   ├── crypto.nim        # Encryption / decryption routines
+│   │   ├── features.nim      # Feature modules
+│   │   ├── main.nim          # Entry point
+│   │   ├── syscalls.nim      # Direct syscall implementations
+│   │   ├── test.nim          # Testing module
+│   │   └── utils.nim         # Helper utilities
+│   │
+│   ├── beacon.nimble         # Nim package definition
+│   └── build.sh              # Build automation script
 │
 └── README.md
+```
