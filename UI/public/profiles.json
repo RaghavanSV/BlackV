@@ -1,0 +1,47 @@
+{
+  "profiles": [
+    {
+      "id": "default",
+      "name": "Default Profile",
+      "description": "Standard configuration for agent communication and behavior",
+      "config": {
+        "callbackInterval": 30,
+        "jitter": 20,
+        "maxRetries": 3,
+        "timeout": 10,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "encryption": true,
+        "antiForensics": true
+      }
+    },
+    {
+      "id": "stealth",
+      "name": "Stealth Profile",
+      "description": "Low and slow configuration for evading detection",
+      "config": {
+        "callbackInterval": 300,
+        "jitter": 50,
+        "maxRetries": 5,
+        "timeout": 30,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "encryption": true,
+        "antiForensics": true,
+        "processInjection": true
+      }
+    },
+    {
+      "id": "aggressive",
+      "name": "Aggressive Profile",
+      "description": "High frequency callbacks for active operations",
+      "config": {
+        "callbackInterval": 5,
+        "jitter": 10,
+        "maxRetries": 10,
+        "timeout": 5,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "encryption": true,
+        "antiForensics": false
+      }
+    }
+  ]
+}

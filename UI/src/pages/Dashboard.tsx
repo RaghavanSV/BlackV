@@ -1,150 +1,175 @@
-import { useEffect, useState } from "react";
-import { useWebSocket } from "../ws/useWebSocket";
+import { Bot, Activity, CheckCircle, AlertTriangle, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState, useRef } from "react";
+import { fetchDashboardMetrics, fetchRecentActivity, DashboardMetrics, RecentActivity } from "@/services/api";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { toast } from "sonner";
 
-interface AgentEvent {
-  id: string;
-  hostname: string;
-  time: number;
-}
-
-interface TaskEvent {
-  agent_id: string;
-  ui_id: string;
-  command: string;
-  time: number;
-}
-
-interface ResultEvent {
-  agent_id: string;
-  ui_id: string;
-  result: string;
-  time: number;
-}
+const metricIcons = {
+  activeAgents: { icon: Bot, color: "text-success" },
+  runningTasks: { icon: Activity, color: "text-primary" },
+  completedTasks: { icon: CheckCircle, color: "text-info" },
+  alerts: { icon: AlertTriangle, color: "text-warning" },
+};
 
 export default function Dashboard() {
-  const [onlineAgents, setOnlineAgents] = useState<number>(0);
-  const [totalTasks, setTotalTasks] = useState<number>(0);
-  const [events, setEvents] = useState<any[]>([]); // activity feed
+  const [apiMetrics, setApiMetrics] = useState<DashboardMetrics>({
+    activeAgents: 0,
+    runningTasks: 0,
+    completedTasks: 0,
+    alerts: 0,
+    agentChange: "—",
+    taskQueuedCount: 0,
+    completedToday: 0,
+  });
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { messages: agentMessages } = useWebSocket("agent_created");
+  const { messages: taskCreatedMessages } = useWebSocket("task_created");
+  const { messages: taskResultMessages } = useWebSocket("task_result");
+
+  // Derive live metrics by combining API baseline with WS counts
+  const metrics: DashboardMetrics = {
+    ...apiMetrics,
+    activeAgents: apiMetrics.activeAgents + agentMessages.length,
+    runningTasks: Math.max(0, apiMetrics.runningTasks + taskCreatedMessages.length - taskResultMessages.length),
+    completedTasks: apiMetrics.completedTasks + taskResultMessages.length,
+    completedToday: (apiMetrics.completedToday ?? 0) + taskResultMessages.length,
+  };
+
+  const loadDashboard = async () => {
+    setIsLoading(true);
+    try {
+      const [metricsData, activityData] = await Promise.allSettled([
+        fetchDashboardMetrics(),
+        fetchRecentActivity(),
+      ]);
+      if (metricsData.status === "fulfilled") setApiMetrics(metricsData.value);
+      if (activityData.status === "fulfilled") setRecentActivity(activityData.value);
+    } catch (error) {
+      console.error("Failed to load dashboard:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Fetch initial counts from API (if backend supports it)
-    const fetchInitial = async () => {
-      try {
-        const agentRes = await fetch("/agents");
-        const agents = await agentRes.json();
-        setOnlineAgents(agents.length);
-      } catch {}
-
-      try {
-        const taskRes = await fetch("/api/task/count"); // optional API
-        if (taskRes.ok) {
-          const t = await taskRes.json();
-          setTotalTasks(t.total);
-        }
-      } catch {}
-    };
-
-    fetchInitial();
+    loadDashboard();
   }, []);
 
-  // Real-time updates via WebSocket
-  useWebSocket((msg) => {
-    if (msg.type === "agent_online") {
-      setOnlineAgents((prev) => prev + 1);
+  // Append new activity from WebSocket events
+  useEffect(() => {
+    const newActivities: RecentActivity[] = [];
 
-      setEvents((prev) => [
-        {
-          type: "Agent Online",
-          icon: "🟢",
-          data: msg.payload.hostname,
-          time: Date.now(),
-        },
-        ...prev,
-      ]);
+    taskCreatedMessages.forEach((msg) => {
+      const id = msg.data?.task_id || msg.data?.id || msg.timestamp;
+      if (id && !recentActivity.some((a) => a.id === `ws_task_${id}`)) {
+        newActivities.push({
+          id: `ws_task_${id}`,
+          agent: msg.data?.agent_id || msg.data?.agent || "Unknown",
+          action: `Task created: ${msg.data?.command || "N/A"}`,
+          time: msg.timestamp ? new Date(msg.timestamp).toLocaleString() : new Date().toLocaleString(),
+          status: "info",
+        });
+      }
+    });
+
+    taskResultMessages.forEach((msg) => {
+      const id = msg.data?.task_id || msg.data?.id || msg.timestamp;
+      if (id && !recentActivity.some((a) => a.id === `ws_result_${id}`)) {
+        newActivities.push({
+          id: `ws_result_${id}`,
+          agent: msg.data?.agent_id || msg.data?.agent || "Unknown",
+          action: `Task ${msg.data?.status || "completed"}: ${msg.data?.command || ""}`,
+          time: msg.timestamp ? new Date(msg.timestamp).toLocaleString() : new Date().toLocaleString(),
+          status: msg.data?.status === "failed" ? "error" : "success",
+        });
+      }
+    });
+
+    agentMessages.forEach((msg) => {
+      const id = msg.data?.id || msg.timestamp;
+      if (id && !recentActivity.some((a) => a.id === `ws_agent_${id}`)) {
+        newActivities.push({
+          id: `ws_agent_${id}`,
+          agent: msg.data?.hostname || msg.data?.id || "Unknown",
+          action: "New agent connected",
+          time: msg.timestamp ? new Date(msg.timestamp).toLocaleString() : new Date().toLocaleString(),
+          status: "success",
+        });
+      }
+    });
+
+    if (newActivities.length > 0) {
+      setRecentActivity((prev) => [...newActivities, ...prev].slice(0, 20));
     }
+  }, [agentMessages, taskCreatedMessages, taskResultMessages]);
 
-    if (msg.type === "task_created") {
-      setTotalTasks((prev) => prev + 1);
+  const navigate = useNavigate();
 
-      setEvents((prev) => [
-        {
-          type: "Task Created",
-          icon: "📌",
-          data: `${msg.payload.ui_id} → ${msg.payload.command}`,
-          time: Date.now(),
-        },
-        ...prev,
-      ]);
-    }
-
-    if (msg.type === "task_result") {
-      setEvents((prev) => [
-        {
-          type: "Task Result",
-          icon: "📤",
-          data: `Agent ${msg.payload.agent_id}, ${msg.payload.ui_id}`,
-          time: Date.now(),
-        },
-        ...prev,
-      ]);
-    }
-  });
+  const metricsDisplay = [
+    { title: "Agents", value: String(metrics?.activeAgents ?? 0), href: "/agents", ...metricIcons.activeAgents },
+    { title: "Running Tasks", value: String(metrics?.runningTasks ?? 0), href: "/tasks", ...metricIcons.runningTasks },
+    { title: "Completed", value: String(metrics?.completedTasks ?? 0), href: "/results", ...metricIcons.completedTasks },
+    { title: "Alerts", value: String(metrics?.alerts ?? 0), href: "/activity", ...metricIcons.alerts },
+  ];
 
   return (
-    <div className="text-white">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        
-        {/* Online Agents */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <div className="text-gray-400 text-sm uppercase">Online Agents</div>
-          <div className="text-4xl mt-2 text-green-400 font-bold">
-            {onlineAgents}
-          </div>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">Command and control overview</p>
         </div>
-
-        {/* Total Tasks */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <div className="text-gray-400 text-sm uppercase">Tasks Created</div>
-          <div className="text-4xl mt-2 text-blue-400 font-bold">
-            {totalTasks}
-          </div>
-        </div>
-
-        {/* BlackV Status */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <div className="text-gray-400 text-sm uppercase">System Status</div>
-          <div className="text-4xl mt-2 text-yellow-400 font-bold">
-            ACTIVE
-          </div>
-        </div>
+        <Button variant="outline" size="sm" onClick={loadDashboard} disabled={isLoading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
-      {/* Activity Feed */}
-      <h2 className="text-xl font-semibold mb-2">Recent Activity</h2>
-
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 h-96 overflow-y-auto">
-        {events.length === 0 && (
-          <div className="text-gray-500">No activity yet…</div>
-        )}
-
-        <div className="space-y-3">
-          {events.map((e, i) => (
-            <div key={i} className="bg-gray-800 p-3 rounded border border-gray-700 flex items-center">
-              <span className="mr-3 text-xl">{e.icon}</span>
-              <div className="flex-1">
-                <div className="text-white font-semibold">{e.type}</div>
-                <div className="text-gray-400 text-sm">{e.data}</div>
-              </div>
-              <div className="text-gray-500 text-xs">
-                {new Date(e.time).toLocaleTimeString()}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {metricsDisplay.map((metric) => (
+          <Card key={metric.title} className="bg-card border-border cursor-pointer transition-all hover:shadow-lg hover:border-primary/50" onClick={() => navigate(metric.href)}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-card-foreground">{metric.title}</CardTitle>
+              <metric.icon className={`h-5 w-5 ${metric.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-foreground">{metric.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-xl text-card-foreground">Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentActivity.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No recent activity</p>
+            ) : (
+              recentActivity.map((activity, idx) => (
+                <div key={activity.id || idx} className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-4">
+                    <div className={`h-2 w-2 rounded-full ${activity.status === "success" ? "bg-success" : activity.status === "error" ? "bg-destructive" : activity.status === "info" ? "bg-primary" : "bg-warning"}`} />
+                    <div>
+                      <div className="font-medium text-foreground">{activity.agent}</div>
+                      <div className="text-sm text-muted-foreground">{activity.action}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">{activity.time}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

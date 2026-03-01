@@ -1,50 +1,60 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { WebSocketProvider } from "./contexts/WebSocketContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import SidebarLayout from "./components/layout/SidebarLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Agents from "./pages/Agents";
-import AgentDetails from "./pages/AgentDetails";
 import Tasks from "./pages/Tasks";
-import Results from "./pages/Results";
-import ActivityLog from "./pages/ActivityLog";
-import Settings from "./pages/Setting";
 import Profiles from "./pages/Profiles";
+import Results from "./pages/Results";
+import Activity from "./pages/Activity";
 
-import { AuthProvider } from "./auth/AuthContext";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import SidebarLayout from "./layouts/SidebarLayout";
+import UserManagement from "./pages/UserManagement";
+import NotFound from "./pages/NotFound";
 
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+const queryClient = new QueryClient();
 
-          {/* Public route */}
-          <Route path="/login" element={<Login />} />
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <WebSocketProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route element={
+                <ProtectedRoute>
+                  <SidebarLayout />
+                </ProtectedRoute>
+              }>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/agents" element={<Agents />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/profiles" element={<Profiles />} />
+                <Route path="/results" element={<Results />} />
+                <Route path="/activity" element={<Activity />} />
+                
+                <Route path="/users" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <UserManagement />
+                  </ProtectedRoute>
+                } />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </WebSocketProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
-          {/* Protected routes with sidebar */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <SidebarLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="agents" element={<Agents />} />
-            <Route path="agents/:id" element={<AgentDetails />} />
-            <Route path="tasks" element={<Tasks />} />
-            <Route path="results" element={<Results />} />
-            <Route path="activity" element={<ActivityLog />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="profiles" element={<Profiles />} />
-          </Route>
-
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
-  );
-}
+export default App;
