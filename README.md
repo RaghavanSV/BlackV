@@ -1,7 +1,6 @@
 # BlackV C2 – Advanced Windows Red Team Research Framework
 
 <p align="center">
-  <img src="UI/public/favicon.png" alt="Project Banner" width="600"/>
   <img src="UI/public/favicon.png" alt="Project Banner" width="700"/>
 </p>
 
