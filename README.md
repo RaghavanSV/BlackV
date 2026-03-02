@@ -96,3 +96,21 @@ BlackV C2 is built to:
 │
 └── README.md
 ```
+---
+## Usage
+
+To start the server,
+
+```bash
+git clone https://github.com//BlackV.git
+cd BlackV/Backend/cmd/server
+go run main.go
+```
+
+To start the frontend,
+
+```bash
+cd BlackV/UI
+npm run dev
+```
+
