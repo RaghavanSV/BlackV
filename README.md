@@ -1,5 +1,9 @@
 # BlackV C2 – Advanced Windows Red Team Research Framework
 
+<p align="center">
+  <img src="UI/public/favicon.png" alt="Project Banner" width="800"/>
+</p>
+
 > **BlackV C2** is an advanced Windows-focused command-and-control research framework designed to explore modern post-exploitation tradecraft, NT-native execution paths, and EDR/AV evasion techniques for **educational, defensive research, and adversary emulation purposes**.
 
 ---
