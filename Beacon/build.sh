@@ -8,7 +8,7 @@ mkdir -p $OUTDIR
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
-COMMON_FLAGS="-d:release --opt:size --passL:-s --strip --gc:orc --stackTrace:off --lineTrace:off -d:danger --nimcache:./.nimcache"
+COMMON_FLAGS="-d:release --opt:size --passL:-s --gc:orc --stackTrace:off --lineTrace:off -d:danger --nimcache:./.nimcache"
 
 echo -e "${CYAN}[+] Building BlackV Nim Beacon...${NC}"
 
