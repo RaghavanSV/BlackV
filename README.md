@@ -1,116 +1,241 @@
-# BlackV C2 – Advanced Windows Red Team Research Framework
-
 <p align="center">
+  <h1 align="center">BlackV C2</h1>
+  <h4 align="center">Next-generation adversary emulation & command-and-control framework</h4>
+  <p align="center">
   <img src="UI/public/favicon.png" alt="Project Banner" width="700"/>
+  </p>
+  <h6 align="center">Built for advanced red teams and security researchers</h6>
 </p>
 
-> **BlackV C2** is an advanced Windows-focused command-and-control research framework designed to explore modern post-exploitation tradecraft, NT-native execution paths, and EDR/AV evasion techniques for **educational, defensive research, and adversary emulation purposes**.
+<p align="center">
+
+<a href="https://opensource.org/licenses/MIT">
+  <img src="https://img.shields.io/badge/license-MIT-red.svg">
+</a>
+
+<a href="#">
+  <img src="https://img.shields.io/badge/maintained-yes-brightgreen.svg">
+</a>
+
+<a href="#">
+  <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg">
+</a>
+
+<a href="#">
+  <img src="https://img.shields.io/badge/platform-Windows-blue.svg">
+</a>
+
+</p>
+
+<p align="center">
+  <a href="#introduction">Introduction</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#disclaimer">Disclaimer</a>
+</p>
 
 ---
 
-## ⚠️ Disclaimer
+# Introduction
 
-This project is intended **strictly for educational, defensive security research, red team simulations, and malware analysis lab environments**.  
-Do **NOT** deploy or use this framework on systems you do not own or have explicit authorization to test.
+**BlackV C2** is a modern **Command & Control (C2) framework** designed for advanced red-team operations, adversary emulation, and security research.
 
-The author assumes **no responsibility** for misuse.
+The project focuses on:
 
----
+- **Stealth**
+- **Automation**
+- **Operator usability**
+- **Advanced detection evasion**
 
-## 🧠 Project Goals
+BlackV combines modern technologies and offensive techniques to create a **powerful and extensible C2 ecosystem** capable of supporting both small red teams and enterprise-scale operations.
 
-BlackV C2 is built to:
+The framework integrates:
 
-- Understand **Windows internals** at the NT syscall level
-- Research **modern EDR detection surfaces**
-- Implement **low-noise, minimal Win32 dependency** techniques
-- Build a modular foundation for **future C2 research**
+- **Nim-based beacons** for low-footprint agents
+- **Go backend infrastructure** for high-performance networking
+- **React dashboard** for real-time operational control
+- **Automated attack mapping using MITRE ATT&CK**
 
----
-
-## ✅ Current Feature Set (Completed)
-
-### 🔹 Native & Low-Level Execution
-- ✔ **Direct syscalls (NTDLL-independent)**
-- ✔ Runtime syscall resolution
-- ✔ Win32 API bypass paths
-
-### 🔹 Process Injection Techniques
-- ✔ Remote process memory allocation
-- ✔ `NtWriteVirtualMemory`–based payload staging
-- ✔ Remote thread creation
-- ✔ Clean handle and memory lifecycle management
-
-### 🔹 Defensive Telemetry Bypasses
-- ✔ **AMSI patching**
-- ✔ **ETW patching**
-- ✔ Minimal API footprint to reduce telemetry noise
-
-### 🔹 Execution Philosophy
-- ✔ Byte-accurate memory management
-- ✔ Explicit size tracking (no implicit buffers)
-- ✔ NTSTATUS-based error handling
-- ✔ No reliance on high-level wrappers
+The goal of BlackV is to provide a **next-generation open-source C2 platform that rivals tools like Mythic, Sliver, Havoc, and Cobalt Strike**.
 
 ---
 
-## 🛠️ Tech Stack
+# Architecture
 
-| Component | Technology |
-|--------|-----------|
-| Language | **Nim** |
-| Windows Bindings | `winim` |
-| APIs Used | NT Native APIs |
-| Target OS | Windows x64 |
-| Focus | Red Team / Malware Research |
+BlackV follows a **modular micro-service architecture**.
+
+
+### Core Components
+
+**Beacon (Agent)**  
+- Written in **Nim**
+- Cross-platform
+- Low detection footprint
+- In-memory execution
+
+**Backend Server**
+
+- Written in **Go**
+- Handles:
+  - Beacon communications
+  - tasking
+  - operator authentication
+  - data storage
+  - WebSocket event streaming
+
+**Operator Interface**
+
+- Built with **React + TypeScript**
+- Provides:
+
+- real-time sessions
+- tasking interface
+- attack visualization
+- telemetry dashboards
 
 ---
 
-## 📂 Project Structure (High Level)
+# Features
 
-```
-.
-├── Backend/                  # Go-based backend server
-│   ├── cmd/                  # Application entry points
-│   ├── data/                 # Storage / persistence layer
-│   ├── internal/             # Private application logic
-│   ├── pkg/                  # Reusable public packages
-│   ├── go.mod                # Go module definition
-│   └── go.sum                # Go dependencies checksum
-│
-├── Beacon/                   # Nim-based implant / beacon
-│   ├── src/
-│   │   ├── bin/              # Compiled binaries output
-│   │   ├── commands.nim      # Command handling logic
-│   │   ├── comms.nim         # C2 communication layer
-│   │   ├── config.nim        # Configuration definitions
-│   │   ├── crypto.nim        # Encryption / decryption routines
-│   │   ├── features.nim      # Feature modules
-│   │   ├── main.nim          # Entry point
-│   │   ├── syscalls.nim      # Direct syscall implementations
-│   │   ├── test.nim          # Testing module
-│   │   └── utils.nim         # Helper utilities
-│   │
-│   ├── beacon.nimble         # Nim package definition
-│   └── build.sh              # Build automation script
-│
-└── README.md
-```
+### Beacon Capabilities
+
+- Encrypted C2 communications
+- Sleep + jitter configuration
+- Dynamic task execution
+- Reflective payload execution
+
 ---
-## Usage
 
-To start the server,
+### Evasion Techniques
+
+BlackV integrates multiple evasion techniques:
+
+- Sleep obfuscation (**Ekko / Foliage style**)
+- ETW patching
+- AMSI bypass
+
+---
+
+### C2 Communication
+
+BlackV supports **customizable malleable C2 profiles**:
+
+- HTTP / HTTPS
+- configurable sleep & jitter
+
+---
+
+### Operator Collaboration
+
+Designed for team operations:
+
+- multi-operator environment
+- session sharing
+- real-time event streaming
+- audit logs
+
+---
+
+# Installation
+
+Clone the repository:
 
 ```bash
-git clone https://github.com//BlackV.git
+git clone https://github.com/RaghavanSV/BlackV.git
+cd BlackV
+```
+
+To install nim and nimble follow the steps in the link:
+
+[nim's official tutorial](https://nim-lang.github.io/nimble/install-nim.html)
+
+To install nim packages:
+
+```bash
+cd BlackV/Beacon
+nimble install
+```
+
+To install go:
+
+[go's official release page](https://go.dev/dl/)
+
+To install go packages:
+
+```bash
+cd BlackV/Backend
+go mod tidy
+```
+
+---
+
+# Usage
+
+First, run the backend server by:
+
+```bash
 cd BlackV/Backend/cmd/server
 go run main.go
 ```
 
-To start the frontend,
+By default the backend server runs in 8080.
+
+Now run the Frontend by:
 
 ```bash
 cd BlackV/UI
 npm run dev
 ```
+
+If you face any script execution issue in powerhsell, use:
+
+```ps1
+powershell -ep bypass
+```
+
+By default the Frontend run in 8081.
+
+To use the pre-built client or beacon:
+
+```bash
+cd Beacon/src/bin
+```
+
+To compile client or beacon manually:
+
+```bash
+cd Beacon/src
+nim c main.nim
+```
+
+For optimised compilation use the scripts:
+
+```ps1
+.\Beacon\build.ps1
+```
+
+```bash
+cd Beacon
+./build.sh
+```
+
+The client configuration is in:
+
+```bash
+Beacon/src/config.nim
+```
+
+---
+
+# Disclaimer
+
+This project is intended for educational purposes, security research, and authorized red-team operations only.
+
+Unauthorized use against systems without explicit permission is illegal.
+
+The author assume no responsibility for misuse or damage caused by this tool.
+
+
 
